@@ -65,6 +65,9 @@ def main():
         print(json.dumps(P, indent=2))
     else:
         args.output_file = os.path.expanduser(args.output_file)
+        d = os.path.dirname(args.output_file)
+        if not os.path.exists(d):
+            os.makedirs(d)
         with open(args.output_file, 'w') as fo:
             fo.write(json.dumps(P, indent=2))
 
