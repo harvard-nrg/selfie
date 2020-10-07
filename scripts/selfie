@@ -18,6 +18,8 @@ def main():
         help='Output provenance file')
     parser.add_argument('-m', '--mask',
         help='Comma separated list of environment variables to mask out')
+    parser.add_argument('-p', '--polling-interval', default=0.5,
+        help='How frequently to check for process termination, in seconds')
     parser.add_argument('command', nargs=ap.REMAINDER)
     args = parser.parse_args()
 
@@ -35,6 +37,7 @@ def main():
         proc.poll()
         if proc.returncode is not None:
             break
+        time.sleep(args.polling_interval)
     end = time.time()
     P = {
         'basename': os.path.basename(exe),
