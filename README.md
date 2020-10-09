@@ -30,6 +30,13 @@ If you want to save the provenance information to a file, use the
 selfie -o selfie.json ls -la ~/
 ```
 
+If you wish `selfie` to lock the `--output-file` for the duration of the 
+command being executed, use the `-l|--lock` argument
+
+```bash
+selfie -o selfie.json -l ls -la ~/
+```
+
 If you want the `selfie` output to mask out certain environment variables, provide 
 a comma separated list of regular expressions using the `-m|--mask` argument
 
