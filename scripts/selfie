@@ -89,6 +89,8 @@ def main():
                 raise e
         logger.debug('writing provenance to %s', args.output_file)
         fo.write(json.dumps(P, indent=2))
+        fo.flush()
+        os.fsync(fd)
     # wait for process to finish
     while True:
         proc.poll()
@@ -109,6 +111,9 @@ def main():
     else:
         fo.seek(0)
         fo.write(json.dumps(P, indent=2))
+        fo.flush()
+        os.fsync(fd)
+        fo.close()
 
 def getDistro():
     output = sp.check_output(['cat', '/etc/system-release']).strip()
@@ -158,9 +163,6 @@ def getenv(mask=None, mask_file='~/.config/selfie/ignore'):
                 v = '********'
         environ[k] = v
     return environ
-
-class CommandNotFound(Exception):
-    pass
 
 if __name__ == '__main__':
     main()
