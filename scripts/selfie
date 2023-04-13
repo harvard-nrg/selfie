@@ -14,6 +14,7 @@ import getpass as gp
 import datetime as dt
 import argparse as ap
 import subprocess as sp
+from selfie import getenv
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,8 @@ def main():
         help='Comma separated list of environment variables to mask out')
     parser.add_argument('-p', '--polling-interval', default=0.5,
         help='How frequently to check for process termination, in seconds')
+    parser.add_argument('-e', '--include-env', action='store_true',
+        help='Include environment variables in output file')
     parser.add_argument('command', nargs=ap.REMAINDER)
     parser.add_argument('-v', '--verbose', action='store_true',
         help='Increase verbosity')
@@ -72,13 +75,15 @@ def main():
         'username': gp.getuser(),
         'mtime': dt.datetime.fromtimestamp(os.path.getmtime(exe)).isoformat(),
         'cwd': cwd,
-        'os': getOS(),
+        'os': getos(),
         'cpu': getcpu(),
         'hostname': socket.gethostname(),
-        'dist': getDistro(),
-        'elapsed': None,
-        'env': getenv(mask=args.mask)
+        'dist': getdistro(),
+        'elapsed': None
     }
+    # add environment variables
+    if args.include_env:
+        P['env'] = getenv(mask=args.mask)
     # write the provenance file and lock it
     if args.output_file:
         fd = os.open(args.output_file, os.O_RDWR|os.O_CREAT)
@@ -122,11 +127,11 @@ def main():
     # exit with returncode of subprocess
     sys.exit(int(proc.returncode))
 
-def getDistro():
+def getdistro():
     output = sp.check_output(['cat', '/etc/system-release']).strip()
     return output.decode()
 
-def getOS():
+def getos():
     output = sp.check_output(['uname', '-a']).strip()
     return output.decode()
 
@@ -155,21 +160,6 @@ def sha512file(f):
     f = os.path.expanduser(f)
     with open(f, 'rb') as fo:
         return hashlib.sha512(fo.read()).hexdigest()
-
-def getenv(mask=None, mask_file='~/.config/selfie/ignore'):
-    if not mask:
-        mask = list()
-    mask_file = os.path.expanduser(mask_file)
-    if os.path.exists(mask_file):
-        with open(mask_file) as fo:
-            mask.extend(fo.read().splitlines())
-    environ = dict()
-    for k,v in os.environ.items():
-        for pattern in mask:
-            if re.match(pattern, k):
-                v = '********'
-        environ[k] = v
-    return environ
 
 if __name__ == '__main__':
     main()
