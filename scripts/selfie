@@ -128,8 +128,9 @@ def main():
     sys.exit(int(proc.returncode))
 
 def getdistro():
-    output = sp.check_output(['cat', '/etc/system-release']).strip()
-    return output.decode()
+    cmd = ['lsb_release', '-d', '-s']
+    output = sp.check_output(cmd).strip()
+    return output.decode().strip('"')
 
 def getos():
     output = sp.check_output(['uname', '-a']).strip()
